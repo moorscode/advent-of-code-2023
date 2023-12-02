@@ -1,30 +1,36 @@
 import { Day } from '../day'
 
+type Set = { amount: number, color: 'red' | 'blue' | 'green' }
+type Cubes = { green: number, red: number, blue: number };
+type Game = { game: number, topCubes: Cubes }
+
 class Day2 extends Day {
   constructor () {
     super(2)
   }
 
-  parseInput (input: string) {
+  parseInput (input: string): Game[] {
     return input.split('\n').filter(a => a).map(line => {
       const a = line.split(': ')
-      const sets = a[1].split('; ').map(set => {
-        return set.split(', ').map(cube => {
-          const details = cube.split(' ')
-          return {
-            amount: parseInt(details[0], 10),
-            color: details[1]
-          }
-        }).reduce((combined, set) => {
-          // @ts-ignore
-          combined[set.color] = set.amount
-          return combined
-        }, { green: 0, red: 0, blue: 0 })
+      const sets: Cubes[] = a[1].split('; ').map(set => {
+        return set.split(', ')
+          .map(cube => {
+            const details = cube.split(' ')
+            return {
+              amount: parseInt(details[0], 10),
+              color: details[1]
+            } as Set
+          })
+          .reduce((combined: Cubes, set: Set) => {
+            // @ts-ignore
+            combined[set.color] = set.amount
+            return combined
+          }, { green: 0, red: 0, blue: 0 })
       })
 
       return {
         game: parseInt(a[0].replace('Game ', ''), 10),
-        sets: sets.reduce((highest, set) => {
+        topCubes: sets.reduce((highest, set) => {
           highest.green = Math.max(highest.green, set.green)
           highest.red = Math.max(highest.red, set.red)
           highest.blue = Math.max(highest.blue, set.blue)
@@ -38,7 +44,7 @@ class Day2 extends Day {
     const games = this.parseInput(input)
 
     const result = games.reduce((total, game) => {
-      if (game.sets.green <= 13 && game.sets.blue <= 14 && game.sets.red <= 12) {
+      if (game.topCubes.green <= 13 && game.topCubes.blue <= 14 && game.topCubes.red <= 12) {
         total += game.game
       }
 
@@ -52,7 +58,7 @@ class Day2 extends Day {
     const games = this.parseInput(input)
 
     const result = games.reduce((total, game) => {
-      total += (game.sets.red * game.sets.blue * game.sets.green)
+      total += (game.topCubes.red * game.topCubes.blue * game.topCubes.green)
       return total
     }, 0)
 
