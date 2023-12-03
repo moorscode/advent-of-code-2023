@@ -18,44 +18,29 @@ class Day1 extends Day {
       return parseInt(numbers[0] + '' + numbers[numbers.length - 1])
     })
 
-    const sum = values.reduce((sum, value): number => sum + value, 0)
-
-    return sum.toString()
+    return values.reduce((sum, value): number => sum + value, 0).toString()
   }
 
   solveForPartTwo (input: string): string {
+    const numberNames = ['---', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
     const lines = input.split('\n').filter(line => line.length > 0)
 
-    const subjects: string[] = Array(9).fill(0).map((element, index) => (index + 1).toString()).concat(['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'])
+    const subjects: string[] = Array(9).fill(0).map((element, index) => (index + 1).toString()).concat(numberNames)
 
     const replacer = (input: number | string): number => {
-      switch (input) {
-        case 'one':
-          return 1
-        case 'two':
-          return 2
-        case 'three':
-          return 3
-        case 'four':
-          return 4
-        case 'five':
-          return 5
-        case 'six':
-          return 6
-        case 'seven':
-          return 7
-        case 'eight':
-          return 8
-        case 'nine':
-          return 9
-        default:
-          return parseInt(input.toString())
+      if (typeof input === 'string') {
+        const index = numberNames.indexOf(input)
+        if (index > 0) {
+          return index
+        }
       }
+
+      return parseInt(input.toString())
     }
 
     let sum = 0
 
-    lines.map((value) => {
+    lines.forEach((value) => {
       let firstNumber = ''
       subjects.reduce((lowestIndex, subject) => {
         const index = value.indexOf(subject)
@@ -84,7 +69,6 @@ class Day1 extends Day {
       const last = replacer(lastNumber)
 
       sum += parseInt(first.toString() + last.toString())
-      return ''
     })
 
     return sum.toString()
