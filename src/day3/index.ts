@@ -28,22 +28,21 @@ class Day3 extends Day {
 
   solveForPartOne (input: string): string {
     // Put all characters in a map.
-    this.data = input.split('\n')
-    const data = input.split('\n').map(row => row.split(''))
+    this.data = input.split('\n').filter(a => a)
+    const data = input.split('\n').filter(a => a).map(row => row.split(''))
 
     // Find all "symbols" (no dot or number).
-    // Find all numbers adjacent to a symbol.
-
     const symbols: Position[] = this.getSymbols(data)
 
+    // Find all numbers adjacent to a symbol.
     let total = 0
     symbols.forEach((symbol: Position) => {
       [-1, 0, 1].forEach(x => {
         [-1, 0, 1].forEach(y => {
           const position: Position = { x: symbol.x + x, y: symbol.y + y }
-          if (data[position.x][position.y].match(/\d/)) {
+          if (this.hasNumberAt(position)) {
             try {
-              total += this.getNumber(position)
+              total += this.getFullNumber(position)
             } catch (e) {
               // ignore.
             }
@@ -57,14 +56,13 @@ class Day3 extends Day {
 
   solveForPartTwo (input: string): string {
     // Put all characters in a map.
-    this.data = input.split('\n')
-    const data = input.split('\n').map(row => row.split(''))
+    this.data = input.split('\n').filter(a => a)
+    const data = input.split('\n').filter(a => a).map(row => row.split(''))
 
     // Find all "symbols" (no dot or number).
-    // Find all numbers adjacent to a symbol.
-
     const symbols = this.getSymbols(data)
 
+    // Find all numbers adjacent to a symbol.
     let total = 0
     symbols.forEach(symbol => {
       const numbers: number[] = []
@@ -78,9 +76,9 @@ class Day3 extends Day {
           const position: Position = { x: symbol.x + x, y: symbol.y + y }
           if (x === 0 && y === 0) return
 
-          if (position.y >= 0 && position.x >= 0 && data[position.x] && data[position.x][position.y] && data[position.x][position.y].match(/\d/)) {
+          if (this.hasNumberAt(position)) {
             try {
-              numbers.push(this.getNumber(position))
+              numbers.push(this.getFullNumber(position))
             } catch (e) {
               // ignore.
             }
@@ -97,7 +95,7 @@ class Day3 extends Day {
   }
 
   // Finding the full number at a certain position.
-  private getNumber (position: Position): number {
+  private getFullNumber (position: Position): number {
     const allNumbersOnTheRow = [...this.data[position.x].matchAll(/\d+/g)]
 
     const numbers = allNumbersOnTheRow.map(result => {
@@ -122,6 +120,18 @@ class Day3 extends Day {
     }
 
     return numbers[0]
+  }
+
+  private hasNumberAt (position: Position): boolean {
+    if (position.y < 0 || position.x < 0) {
+      return false
+    }
+
+    if (position.x > this.data.length - 1 || position.y > this.data[0].length - 1) {
+      return false
+    }
+
+    return this.data[position.x][position.y].match(/\d/) !== null
   }
 }
 
