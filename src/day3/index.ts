@@ -1,6 +1,6 @@
 import { Day } from '../day'
 
-type Coordinate = {
+type Position = {
   x: number;
   y: number;
 }
@@ -12,8 +12,8 @@ class Day3 extends Day {
     super(3)
   }
 
-  getSymbols (data: string[][]): Coordinate[] {
-    const symbols: Coordinate[] = []
+  getSymbols (data: string[][]): Position[] {
+    const symbols: Position[] = []
 
     data.forEach((row: string[], x: number) => {
       row.forEach((column: string, y: number) => {
@@ -34,15 +34,19 @@ class Day3 extends Day {
     // Find all "symbols" (no dot or number).
     // Find all numbers adjacent to a symbol.
 
-    const symbols: Coordinate[] = this.getSymbols(data)
+    const symbols: Position[] = this.getSymbols(data)
 
     let total = 0
-    symbols.forEach((symbol: Coordinate) => {
+    symbols.forEach((symbol: Position) => {
       [-1, 0, 1].forEach(x => {
         [-1, 0, 1].forEach(y => {
-          const position: Coordinate = { x: symbol.x + x, y: symbol.y + y }
+          const position: Position = { x: symbol.x + x, y: symbol.y + y }
           if (data[position.x][position.y].match(/\d/)) {
-            total += this.getNumbers(position).reduce((total, number) => total + number, 0)
+            try {
+              total += this.getNumber(position)
+            } catch (e) {
+              // ignore.
+            }
           }
         })
       })
@@ -63,7 +67,7 @@ class Day3 extends Day {
 
     let total = 0
     symbols.forEach(symbol => {
-      let numbers: number[] = []
+      const numbers: number[] = []
 
       if (data[symbol.x][symbol.y] !== '*') {
         return
@@ -71,11 +75,15 @@ class Day3 extends Day {
 
       [-1, 0, 1].forEach(x => {
         [-1, 0, 1].forEach(y => {
-          const position: Coordinate = { x: symbol.x + x, y: symbol.y + y }
+          const position: Position = { x: symbol.x + x, y: symbol.y + y }
           if (x === 0 && y === 0) return
 
           if (position.y >= 0 && position.x >= 0 && data[position.x] && data[position.x][position.y] && data[position.x][position.y].match(/\d/)) {
-            numbers = numbers.concat(this.getNumbers(position))
+            try {
+              numbers.push(this.getNumber(position))
+            } catch (e) {
+              // ignore.
+            }
           }
         })
       })
@@ -88,10 +96,11 @@ class Day3 extends Day {
     return total.toString()
   }
 
-  private getNumbers (position: Coordinate): number[] {
+  // Finding the full number at a certain position.
+  private getNumber (position: Position): number {
     const allNumbersOnTheRow = [...this.data[position.x].matchAll(/\d+/g)]
 
-    return allNumbersOnTheRow.map(result => {
+    const numbers = allNumbersOnTheRow.map(result => {
       if (result.index === undefined) {
         return 0
       }
@@ -107,6 +116,12 @@ class Day3 extends Day {
 
       return 0
     }).filter(number => number > 0) // Remove zeros to be able to count found numbers.
+
+    if (numbers.length === 0) {
+      throw new Error('no number found')
+    }
+
+    return numbers[0]
   }
 }
 
