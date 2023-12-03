@@ -6,7 +6,7 @@ type Position = {
 }
 
 class Day3 extends Day {
-  private data: string[] = []
+  private rows: string[] = []
 
   constructor () {
     super(3)
@@ -26,77 +26,42 @@ class Day3 extends Day {
     return symbols
   }
 
-  solveForPartOne (input: string): string {
-    // Put all characters in a map.
-    this.data = input.split('\n').filter(a => a)
-    const data = input.split('\n').filter(a => a).map(row => row.split(''))
+  private hasNumberAt (position: Position): boolean {
+    if (position.y < 0 || position.x < 0) {
+      return false
+    }
 
-    // Find all "symbols" (no dot or number).
-    const symbols: Position[] = this.getSymbols(data)
+    if (position.x > this.rows.length - 1 || position.y > this.rows[0].length - 1) {
+      return false
+    }
 
-    // Find all numbers adjacent to a symbol.
-    let total = 0
-    symbols.forEach((symbol: Position) => {
-      [-1, 0, 1].forEach(x => {
-        [-1, 0, 1].forEach(y => {
-          const position: Position = { x: symbol.x + x, y: symbol.y + y }
-          if (this.hasNumberAt(position)) {
-            try {
-              total += this.getFullNumber(position)
-            } catch (e) {
-              // ignore.
-            }
-          }
-        })
-      })
-    })
-
-    return total.toString()
+    return this.rows[position.x][position.y].match(/\d/) !== null
   }
 
-  solveForPartTwo (input: string): string {
-    // Put all characters in a map.
-    this.data = input.split('\n').filter(a => a)
-    const data = input.split('\n').filter(a => a).map(row => row.split(''))
+  private getNumberSurroundingSymbol (symbol: Position): number[] {
+    const numbers: number[] = [];
 
-    // Find all "symbols" (no dot or number).
-    const symbols = this.getSymbols(data)
+    [-1, 0, 1].forEach(x => {
+      [-1, 0, 1].forEach(y => {
+        if (x === 0 && y === 0) return
 
-    // Find all numbers adjacent to a symbol.
-    let total = 0
-    symbols.forEach(symbol => {
-      const numbers: number[] = []
-
-      if (data[symbol.x][symbol.y] !== '*') {
-        return
-      }
-
-      [-1, 0, 1].forEach(x => {
-        [-1, 0, 1].forEach(y => {
-          const position: Position = { x: symbol.x + x, y: symbol.y + y }
-          if (x === 0 && y === 0) return
-
-          if (this.hasNumberAt(position)) {
-            try {
-              numbers.push(this.getFullNumber(position))
-            } catch (e) {
-              // ignore.
-            }
+        const position: Position = { x: symbol.x + x, y: symbol.y + y }
+        if (this.hasNumberAt(position)) {
+          try {
+            numbers.push(this.getFullNumber(position))
+          } catch (e) {
+            // ignore.
           }
-        })
+        }
       })
-
-      if (numbers.length === 2) {
-        total += numbers[0] * numbers[1]
-      }
     })
 
-    return total.toString()
+    return numbers
   }
 
   // Finding the full number at a certain position.
   private getFullNumber (position: Position): number {
-    const allNumbersOnTheRow = [...this.data[position.x].matchAll(/\d+/g)]
+    const allNumbersOnTheRow = [...this.rows[position.x].matchAll(/\d+/g)]
 
     const numbers = allNumbersOnTheRow.map(result => {
       if (result.index === undefined) {
@@ -108,7 +73,7 @@ class Day3 extends Day {
       if (result.index <= position.y && result.index + result[0].toString().length >= position.y) {
         // Remove number so we don't add it multiple times.
         const replacement = Array(numberLength).fill('.').join('')
-        this.data[position.x] = this.data[position.x].substring(0, result.index) + replacement + this.data[position.x].substring(result.index + numberLength)
+        this.rows[position.x] = this.rows[position.x].substring(0, result.index) + replacement + this.rows[position.x].substring(result.index + numberLength)
         return parseInt(result[0], 10)
       }
 
@@ -122,16 +87,48 @@ class Day3 extends Day {
     return numbers[0]
   }
 
-  private hasNumberAt (position: Position): boolean {
-    if (position.y < 0 || position.x < 0) {
-      return false
-    }
+  solveForPartOne (input: string): string {
+    // Put all characters in a map.
+    this.rows = input.split('\n').filter(a => a)
+    const data = this.rows.map(row => row.split(''))
 
-    if (position.x > this.data.length - 1 || position.y > this.data[0].length - 1) {
-      return false
-    }
+    // Find all "symbols" (no dot or number).
+    const symbols: Position[] = this.getSymbols(data)
 
-    return this.data[position.x][position.y].match(/\d/) !== null
+    // Find all numbers adjacent to a symbol.
+    let total = 0
+    symbols.forEach((symbol: Position) => {
+      const numbers: number[] = this.getNumberSurroundingSymbol(symbol)
+
+      total += numbers.reduce((total, number) => total + number, 0)
+    })
+
+    return total.toString()
+  }
+
+  solveForPartTwo (input: string): string {
+    // Put all characters in a map.
+    this.rows = input.split('\n').filter(a => a)
+    const data = this.rows.map(row => row.split(''))
+
+    // Find all "symbols" (no dot or number).
+    const symbols = this.getSymbols(data)
+
+    // Find all numbers adjacent to a symbol.
+    let total = 0
+    symbols.forEach(symbol => {
+      // We only care about the "*" symbols now - skip the rest.
+      if (data[symbol.x][symbol.y] !== '*') {
+        return
+      }
+
+      const numbers: number[] = this.getNumberSurroundingSymbol(symbol)
+      if (numbers.length === 2) {
+        total += numbers[0] * numbers[1]
+      }
+    })
+
+    return total.toString()
   }
 }
 
