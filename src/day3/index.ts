@@ -1,6 +1,6 @@
 import { Day } from '../day'
 
-type Coords = {
+type Coordinate = {
   x: number;
   y: number;
 }
@@ -12,6 +12,20 @@ class Day3 extends Day {
     super(3)
   }
 
+  getSymbols (data: string[][]): Coordinate[] {
+    const symbols: Coordinate[] = []
+
+    data.forEach((row: string[], x: number) => {
+      row.forEach((column: string, y: number) => {
+        if (column.match(/[^\d.]/)) {
+          symbols.push({ x, y })
+        }
+      })
+    })
+
+    return symbols
+  }
+
   solveForPartOne (input: string): string {
     // Put all characters in a map.
     this.data = input.split('\n')
@@ -20,21 +34,13 @@ class Day3 extends Day {
     // Find all "symbols" (no dot or number).
     // Find all numbers adjacent to a symbol.
 
-    const symbols: Coords[] = []
-
-    data.forEach((row, x) => {
-      row.forEach((column, y) => {
-        if (column.match(/[^\d.]/)) {
-          symbols.push({ x, y })
-        }
-      })
-    })
+    const symbols: Coordinate[] = this.getSymbols(data)
 
     let total = 0
-    symbols.forEach(symbol => {
+    symbols.forEach((symbol: Coordinate) => {
       [-1, 0, 1].forEach(x => {
         [-1, 0, 1].forEach(y => {
-          const position: Coords = { x: symbol.x + x, y: symbol.y + y }
+          const position: Coordinate = { x: symbol.x + x, y: symbol.y + y }
           if (data[position.x][position.y].match(/\d/)) {
             total += this.getNumbers(position).reduce((total, number) => total + number, 0)
           }
@@ -53,23 +59,19 @@ class Day3 extends Day {
     // Find all "symbols" (no dot or number).
     // Find all numbers adjacent to a symbol.
 
-    const symbols: Coords[] = []
-
-    data.forEach((row, x) => {
-      row.forEach((column, y) => {
-        if (column.match(/[^\d.]/)) {
-          symbols.push({ x, y })
-        }
-      })
-    })
+    const symbols = this.getSymbols(data)
 
     let total = 0
     symbols.forEach(symbol => {
-      let numbers: number[] = [];
+      let numbers: number[] = []
+
+      if (data[symbol.x][symbol.y] !== '*') {
+        return
+      }
 
       [-1, 0, 1].forEach(x => {
         [-1, 0, 1].forEach(y => {
-          const position: Coords = { x: symbol.x + x, y: symbol.y + y }
+          const position: Coordinate = { x: symbol.x + x, y: symbol.y + y }
           if (x === 0 && y === 0) return
 
           if (position.y >= 0 && position.x >= 0 && data[position.x] && data[position.x][position.y] && data[position.x][position.y].match(/\d/)) {
@@ -78,25 +80,24 @@ class Day3 extends Day {
         })
       })
 
-      if (data[symbol.x][symbol.y] === '*' && numbers.length === 2) {
+      if (numbers.length === 2) {
         total += numbers[0] * numbers[1]
-      } else {
-        // total += numbers.reduce((total, number) => total + number, 0)
       }
     })
 
     return total.toString()
   }
 
-  private getNumbers (position: Coords) {
-    const results = [...this.data[position.x].matchAll(/\d+/g)]
+  private getNumbers (position: Coordinate): number[] {
+    const allNumbersOnTheRow = [...this.data[position.x].matchAll(/\d+/g)]
 
-    return results.map(result => {
+    return allNumbersOnTheRow.map(result => {
       if (result.index === undefined) {
         return 0
       }
 
       const numberLength = result[0].toString().length
+      // Find the numbers that overlap the given coordinate.
       if (result.index <= position.y && result.index + result[0].toString().length >= position.y) {
         // Remove number so we don't add it multiple times.
         const replacement = Array(numberLength).fill('.').join('')
@@ -105,7 +106,7 @@ class Day3 extends Day {
       }
 
       return 0
-    }).filter(number => number > 0)
+    }).filter(number => number > 0) // Remove zeros to be able to count found numbers.
   }
 }
 
