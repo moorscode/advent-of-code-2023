@@ -5,8 +5,8 @@ class Day4 extends Day {
     super(4)
   }
 
-  solveForPartOne (input: string): string {
-    const cards = input.split('\n').filter(a => a).map(row => {
+  getCards (input: string) {
+    return input.split('\n').filter(a => a).map(row => {
       const [card, data] = row.split(': ')
       const cardNumber = parseInt(card.replace('Card ', ''), 10)
       const parts = data.replace(/\s+/g, ' ').split(' | ')
@@ -20,6 +20,10 @@ class Day4 extends Day {
         numbers: numbers
       }
     })
+  }
+
+  solveForPartOne (input: string): string {
+    const cards = this.getCards(input)
 
     let total = 0
 
@@ -40,20 +44,7 @@ class Day4 extends Day {
   }
 
   solveForPartTwo (input: string): string {
-    const cards = input.split('\n').filter(a => a).map(row => {
-      const [card, data] = row.split(': ')
-      const cardNumber = parseInt(card.replace('Card ', ''), 10)
-      const parts = data.replace(/\s+/g, ' ').split(' | ')
-
-      const winners = parts[0].split(' ').map(value => parseInt(value.trim(), 10)).sort()
-      const numbers = parts[1].split(' ').map(value => parseInt(value.trim(), 10)).sort()
-
-      return {
-        card: cardNumber,
-        winners: winners,
-        numbers: numbers
-      }
-    })
+    const cards = this.getCards(input)
 
     let total = 0
 
