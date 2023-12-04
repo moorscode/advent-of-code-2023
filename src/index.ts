@@ -1,36 +1,42 @@
 import { Day } from './day'
-import day0 from './day0/index'
 import day1 from './day1/index'
 import day2 from './day2/index'
-import day3 from './day3/index';
-import day4 from './day4/index';
+import day3 from './day3/index'
+import day4 from './day4/index'
+import day5 from './day5/index';
 // MORE IMPORTS HERE
 const days: Day[] = [
-  day0,
   day1,
   day2,
   day3,
-    day4,
+  day4,
+  day5,
     // MORE DAYS HERE
 ]
 
 async function runDay (dayId: number) {
-  const resultPart1 = await days[dayId].partOne()
-  console.log('Part 1 result:\n')
-  console.log(resultPart1)
+  const start1 = Date.now()
+  const part1 = await days[dayId].partOne()
+  const end1 = Date.now()
 
-  console.log('\n')
+  const start2 = Date.now()
+  const part2 = await days[dayId].partTwo()
+  const end2 = Date.now()
 
-  const resultPart2 = await days[dayId].partTwo()
-  console.log('Part 2 result:\n')
-  console.log(resultPart2)
+  console.log('Part 1 result:', part1, `\nExecution time: ${end1 - start1} ms`, '\n')
+  console.log('Part 2 result:', part2, `\nExecution time: ${end2 - start2} ms`)
 }
 
-console.log('\n\n\n   ADVENT OF CODE \n\n')
-const params = process.argv.splice(2)
-if (params.length) {
-  runDay(parseInt(params[0], 10))
-} else {
+async function run (params: string[]) {
+  if (params.length === 1) {
+    const day = parseInt(params[0], 10)
+    console.log(`ADVENT OF CODE: Day ${day}\n`)
+    await runDay(day - 1)
+    return
+  }
+
   console.log('Usage: npm run start [day]')
   console.log(`Available days: [ ${days.map((x) => x.id).join(', ')} ]`)
 }
+
+run(process.argv.splice(2))

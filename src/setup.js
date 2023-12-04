@@ -1,6 +1,6 @@
-const { promises, constants } = require('fs')
+const {promises, constants} = require('fs')
 const path = require('path')
-const { exit } = require('process')
+const {exit} = require('process')
 
 if (process.argv.length === 2) {
   console.info('ℹ Usage: npm run setup {day}')
@@ -23,7 +23,7 @@ const startPath = process.cwd();
   console.log('All done! Enjoy your new puzzle! 🎅')
 })()
 
-async function createDirectoryIfItDoesntExist (dir) {
+async function createDirectoryIfItDoesntExist(dir) {
   try {
     await promises.access(dir, constants.F_OK | constants.W_OK)
   } catch {
@@ -32,7 +32,7 @@ async function createDirectoryIfItDoesntExist (dir) {
   }
 }
 
-async function createFileWithContentIfItDoesntExist (name, content) {
+async function createFileWithContentIfItDoesntExist(name, content) {
   try {
     await promises.access(name, constants.R_OK)
     console.log(`  File ${name} exists, will not overwrite.`)
@@ -42,7 +42,7 @@ async function createFileWithContentIfItDoesntExist (name, content) {
   }
 }
 
-async function createInputFiles () {
+async function createInputFiles() {
   const inputDayPath = path.join(startPath, 'inputs', `day${day}`)
   await createDirectoryIfItDoesntExist(inputDayPath)
   const year = (new Date()).getFullYear()
@@ -58,14 +58,14 @@ async function createInputFiles () {
   )
 }
 
-async function copyTemplate (from, to) {
-  const content = (await promises.readFile(from, { encoding: 'utf8' }))
+async function copyTemplate(from, to) {
+  const content = (await promises.readFile(from, {encoding: 'utf8'}))
     .replace(/0/g, day) // dirty, I know 😅
   createFileWithContentIfItDoesntExist(to, content)
 }
 
-async function createCodeFiles () {
-  const templateFolder = path.join(startPath, 'src', 'day0')
+async function createCodeFiles() {
+  const templateFolder = path.join(startPath, 'src', 'template')
   const codeFolder = path.join(startPath, 'src', `day${day}`)
   await createDirectoryIfItDoesntExist(codeFolder)
   await copyTemplate(
@@ -73,14 +73,14 @@ async function createCodeFiles () {
     path.join(codeFolder, 'index.ts')
   )
   await copyTemplate(
-    path.join(templateFolder, 'day0.spec.ts'),
+    path.join(templateFolder, 'day.spec.ts'),
     path.join(codeFolder, `day${day}.spec.ts`)
   )
 }
 
-async function updateIndex () {
+async function updateIndex() {
   const indexPath = path.join(startPath, 'src', 'index.ts')
-  const contents = (await promises.readFile(indexPath, { encoding: 'utf8' }))
+  const contents = (await promises.readFile(indexPath, {encoding: 'utf8'}))
     .replace('// MORE IMPORTS HERE', `import day${day} from './day${day}/index';
 // MORE IMPORTS HERE`)
     .replace('// MORE DAYS HERE', `day${day},
