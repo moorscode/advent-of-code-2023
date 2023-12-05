@@ -27,9 +27,9 @@ class Day5 extends Day {
   }
 
   convert (input: number, data: Map[]) {
-    for (const line of data) {
-      if (input >= line.sourceRangeStart && input <= line.sourceRangeStart + (line.rangeLength - 1)) {
-        return (input - line.sourceRangeStart) + line.destinationRangeStart
+    for (const map of data) {
+      if (input >= map.sourceRangeStart && input <= map.sourceRangeStart + (map.rangeLength - 1)) {
+        return (input - map.sourceRangeStart) + map.destinationRangeStart
       }
     }
     return input
@@ -67,14 +67,17 @@ class Day5 extends Day {
 
     let lowest = Infinity
 
-    for (let g = 0; g < seedsGroups.length - 1; g += 2) {
+    for (let g = 0; g <= seedsGroups.length - 2; g += 2) {
+      let lowestForGroup = Infinity
       for (let s = seedsGroups[g]; s <= seedsGroups[g] + (seedsGroups[g + 1] - 1); s++) {
         let runningNumber = s
         for (const maps of sections) {
           runningNumber = this.convert(runningNumber, maps)
         }
-        lowest = Math.min(lowest, runningNumber)
+        lowestForGroup = Math.min(lowestForGroup, runningNumber)
       }
+      // console.log(g, lowestForGroup)
+      lowest = Math.min(lowest, lowestForGroup)
     }
 
     return lowest.toString()
