@@ -32,6 +32,12 @@ const Jack: Card = {
   key: 'J'
 }
 
+const Joker: Card = {
+  type: 'joker',
+  value: 1,
+  key: 'J'
+}
+
 const Ten: Card = {
   type: 'number',
   value: 10,
@@ -83,29 +89,14 @@ const Two: Card = {
 type Group = {
   value: number,
   amount: number,
+  key: string,
 }
 
 class Day7 extends Day {
-  private cards: Card[]
+  private cards: Card[] = []
 
   constructor () {
     super(7)
-
-    this.cards = [
-      Two,
-      Three,
-      Four,
-      Five,
-      Six,
-      Seven,
-      Eight,
-      Nine,
-      Ten,
-      Jack,
-      Queen,
-      King,
-      Ace
-    ]
   }
 
   toCards (input: string): Card[] {
@@ -113,7 +104,7 @@ class Day7 extends Day {
     return input.split('').map((char: string) => this.cards.find(card => card.key === char))
   }
 
-  sortHands (hands: Hand[]): number[] {
+  sortHands (hands: Hand[], originalHands: Hand[]): number[] {
     const data = hands.map(hand => {
       // @ts-ignore
       const grouped = hand.reduce((grouped: Card[string], card) => {
@@ -123,6 +114,7 @@ class Day7 extends Day {
       }, [])
 
       return Object.keys(grouped).reduce((a: Group[], key) => {
+        // @ts-ignore
         a.push({
           // @ts-ignore
           value: grouped[key][0].value,
@@ -165,10 +157,10 @@ class Day7 extends Day {
       }
 
       for (let i = 0; i < 5; i++) {
-        if (hands[a.hand][i].value === hands[b.hand][i].value) {
+        if (originalHands[a.hand][i].value === originalHands[b.hand][i].value) {
           continue
         }
-        return hands[b.hand][i].value - hands[a.hand][i].value
+        return originalHands[b.hand][i].value - originalHands[a.hand][i].value
       }
 
       return 0
@@ -178,6 +170,22 @@ class Day7 extends Day {
   }
 
   solveForPartOne (input: string): string {
+    this.cards = [
+      Two,
+      Three,
+      Four,
+      Five,
+      Six,
+      Seven,
+      Eight,
+      Nine,
+      Ten,
+      Jack,
+      Queen,
+      King,
+      Ace
+    ]
+
     const data = input.split('\n').filter(a => a).map(line => {
       const parts = line.split(' ')
       return {
@@ -186,11 +194,11 @@ class Day7 extends Day {
       }
     })
 
-    const sorted = this.sortHands(data.map(({ cards }) => cards))
+    const hands = data.map(({ cards }) => cards)
+    const sorted = this.sortHands(hands, hands)
     sorted.reverse()
 
     const winnings = sorted.reduce((total, cardIndex, rank) => {
-      // console.log((rank + 1), data[cardIndex].bid, data[cardIndex].cards.map(card => card.key))
       return total + ((rank + 1) * data[cardIndex].bid)
     }, 0)
 
@@ -198,7 +206,90 @@ class Day7 extends Day {
   }
 
   solveForPartTwo (input: string): string {
-    return input
+    this.cards = [
+      Joker,
+      Two,
+      Three,
+      Four,
+      Five,
+      Six,
+      Seven,
+      Eight,
+      Nine,
+      Ten,
+      Queen,
+      King,
+      Ace
+    ]
+
+    const data = input.split('\n').filter(a => a).map(line => {
+      const parts = line.split(' ')
+      return {
+        cards: this.toCards(parts[0]),
+        bid: parseInt(parts[1])
+      }
+    })
+
+    const sorted = this.sortHands(data.map(({ cards }) => this.convertJokers(cards)), data.map(({ cards }) => cards))
+    sorted.reverse()
+
+    const winnings = sorted.reduce((total, cardIndex, rank) => {
+      return total + ((rank + 1) * data[cardIndex].bid)
+    }, 0)
+
+    return winnings.toString()
+  }
+
+  private convertJokers (cards: Card[]): Card[] {
+    // No jokers, done.
+    if (cards.filter(card => card.key === 'J').length === 0) {
+      return cards
+    }
+
+    const otherCards = cards.filter(card => card.key !== 'J')
+    if (otherCards.length === 0) {
+      return [
+        Joker,
+        Joker,
+        Joker,
+        Joker,
+        Joker
+      ]
+    }
+
+    // @ts-ignore
+    const grouped = otherCards.reduce((grouped: Card[string], card) => {
+      grouped[card.key] = grouped[card.key] || []
+      grouped[card.key].push(card)
+      return grouped
+    }, [])
+
+    const group = Object.keys(grouped).reduce((a: Group[], key) => {
+      // @ts-ignore
+      a.push({
+        // @ts-ignore
+        value: grouped[key][0].value,
+        // @ts-ignore
+        amount: grouped[key].length,
+        key
+      })
+      return a
+    }, []).sort((a, b) => {
+      if (a.amount === b.amount) {
+        return b.value - a.value
+      }
+      return b.amount - a.amount
+    })
+
+    // @ts-ignore
+    const replace: Card = this.cards.find(card => card.key === group[0].key)
+
+    return cards.map(card => {
+      if (card.key === 'J') {
+        return replace
+      }
+      return card
+    })
   }
 }
 
