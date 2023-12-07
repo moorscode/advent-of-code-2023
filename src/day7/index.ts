@@ -92,6 +92,11 @@ type Group = {
   key: string,
 }
 
+type HandData = {
+  hand: number,
+  data: Group[]
+}
+
 class Day7 extends Day {
   private cards: Card[] = []
 
@@ -100,32 +105,28 @@ class Day7 extends Day {
   }
 
   toCards (input: string): Card[] {
-    // @ts-ignore
-    return input.split('').map((char: string) => this.cards.find(card => card.key === char))
+    return input.split('').map((char: string) => this.cards.find(card => card.key === char) || Joker)
   }
 
   sortHands (hands: Hand[], originalHands: Hand[]): number[] {
     const data = hands.map(hand => {
-      // @ts-ignore
-      const grouped = hand.reduce((grouped: Card[string], card) => {
+      const grouped = hand.reduce((grouped: Record<string, Card[]>, card: Card) => {
         grouped[card.key] = grouped[card.key] || []
         grouped[card.key].push(card)
         return grouped
-      }, [])
+      }, {})
 
       return Object.keys(grouped).reduce((a: Group[], key) => {
-        // @ts-ignore
         a.push({
-          // @ts-ignore
           value: grouped[key][0].value,
-          // @ts-ignore
-          amount: grouped[key].length
+          amount: grouped[key].length,
+          key
         })
         return a
       }, [])
     })
 
-    const keyed = data.map((group, index) => {
+    const keyed: HandData[] = data.map((group, index) => {
       return {
         hand: index,
         data: group.sort((a, b) => {
@@ -252,19 +253,15 @@ class Day7 extends Day {
       return cards
     }
 
-    // @ts-ignore
-    const grouped = otherCards.reduce((grouped: Card[string], card) => {
+    const grouped = otherCards.reduce((grouped: Record<string, Card[]>, card) => {
       grouped[card.key] = grouped[card.key] || []
       grouped[card.key].push(card)
       return grouped
-    }, [])
+    }, {})
 
     const group = Object.keys(grouped).reduce((a: Group[], key) => {
-      // @ts-ignore
       a.push({
-        // @ts-ignore
         value: grouped[key][0].value,
-        // @ts-ignore
         amount: grouped[key].length,
         key
       })
@@ -276,8 +273,7 @@ class Day7 extends Day {
       return b.amount - a.amount
     })
 
-    // @ts-ignore
-    const replace: Card = this.cards.find(card => card.key === group[0].key)
+    const replace: Card = this.cards.find(card => card.key === group[0].key) || Joker
 
     return cards.map(card => {
       if (card.key === 'J') {
