@@ -108,25 +108,27 @@ class Day7 extends Day {
     return input.split('').map((char: string) => this.cards.find(card => card.key === char) || Joker)
   }
 
+  groupCards (cards: Hand): Group[] {
+    const grouped = cards.reduce((grouped: Record<string, Card[]>, card: Card) => {
+      grouped[card.key] = grouped[card.key] || []
+      grouped[card.key].push(card)
+      return grouped
+    }, {})
+
+    return Object.keys(grouped).reduce((a: Group[], key) => {
+      a.push({
+        value: grouped[key][0].value,
+        amount: grouped[key].length,
+        key
+      })
+      return a
+    }, [])
+  }
+
   sortHands (hands: Hand[], originalHands: Hand[]): number[] {
-    const data = hands.map(hand => {
-      const grouped = hand.reduce((grouped: Record<string, Card[]>, card: Card) => {
-        grouped[card.key] = grouped[card.key] || []
-        grouped[card.key].push(card)
-        return grouped
-      }, {})
+    const groupedHands = hands.map(hand => this.groupCards(hand))
 
-      return Object.keys(grouped).reduce((a: Group[], key) => {
-        a.push({
-          value: grouped[key][0].value,
-          amount: grouped[key].length,
-          key
-        })
-        return a
-      }, [])
-    })
-
-    const keyed: HandData[] = data.map((group, index) => {
+    const keyed: HandData[] = groupedHands.map((group, index) => {
       return {
         hand: index,
         data: group.sort((a, b) => {
@@ -253,28 +255,18 @@ class Day7 extends Day {
       return cards
     }
 
-    const grouped = otherCards.reduce((grouped: Record<string, Card[]>, card) => {
-      grouped[card.key] = grouped[card.key] || []
-      grouped[card.key].push(card)
-      return grouped
-    }, {})
-
-    const group = Object.keys(grouped).reduce((a: Group[], key) => {
-      a.push({
-        value: grouped[key][0].value,
-        amount: grouped[key].length,
-        key
-      })
-      return a
-    }, []).sort((a, b) => {
+    // Group the cards
+    const grouped = this.groupCards(otherCards).sort((a, b) => {
       if (a.amount === b.amount) {
         return b.value - a.value
       }
       return b.amount - a.amount
     })
 
-    const replace: Card = this.cards.find(card => card.key === group[0].key) || Joker
+    // Get card type of best group
+    const replace: Card = this.cards.find(card => card.key === grouped[0].key) || Joker
 
+    // Replace all Jokers with card type
     return cards.map(card => {
       if (card.key === 'J') {
         return replace
