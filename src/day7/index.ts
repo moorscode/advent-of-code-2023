@@ -8,83 +8,20 @@ type Card = {
 
 type Hand = Card[]
 
-const Ace: Card = {
-  type: 'ace',
-  value: 14,
-  key: 'A'
-}
-
-const King: Card = {
-  type: 'king',
-  value: 13,
-  key: 'K'
-}
-
-const Queen: Card = {
-  type: 'queen',
-  value: 12,
-  key: 'Q'
-}
-
-const Jack: Card = {
-  type: 'jack',
-  value: 11,
-  key: 'J'
-}
-
-const Joker: Card = {
-  type: 'joker',
-  value: 1,
-  key: 'J'
-}
-
-const Ten: Card = {
-  type: 'number',
-  value: 10,
-  key: 'T'
-}
-
-const Nine: Card = {
-  type: 'number',
-  value: 9,
-  key: '9'
-}
-
-const Eight: Card = {
-  type: 'number',
-  value: 8,
-  key: '8'
-}
-const Seven: Card = {
-  type: 'number',
-  value: 7,
-  key: '7'
-}
-const Six: Card = {
-  type: 'number',
-  value: 6,
-  key: '6'
-}
-const Five: Card = {
-  type: 'number',
-  value: 5,
-  key: '5'
-}
-const Four: Card = {
-  type: 'number',
-  value: 4,
-  key: '4'
-}
-const Three: Card = {
-  type: 'number',
-  value: 3,
-  key: '3'
-}
-const Two: Card = {
-  type: 'number',
-  value: 2,
-  key: '2'
-}
+const Ace: Card = { type: 'ace', value: 14, key: 'A' }
+const King: Card = { type: 'king', value: 13, key: 'K' }
+const Queen: Card = { type: 'queen', value: 12, key: 'Q' }
+const Jack: Card = { type: 'jack', value: 11, key: 'J' }
+const Ten: Card = { type: 'number', value: 10, key: 'T' }
+const Nine: Card = { type: 'number', value: 9, key: '9' }
+const Eight: Card = { type: 'number', value: 8, key: '8' }
+const Seven: Card = { type: 'number', value: 7, key: '7' }
+const Six: Card = { type: 'number', value: 6, key: '6' }
+const Five: Card = { type: 'number', value: 5, key: '5' }
+const Four: Card = { type: 'number', value: 4, key: '4' }
+const Three: Card = { type: 'number', value: 3, key: '3' }
+const Two: Card = { type: 'number', value: 2, key: '2' }
+const Joker: Card = { type: 'joker', value: 1, key: 'J' }
 
 type Group = {
   value: number,
