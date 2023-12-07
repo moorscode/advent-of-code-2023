@@ -8,6 +8,11 @@ type Card = {
 
 type Hand = Card[]
 
+type Input = {
+  cards: Hand,
+  bid: number
+}
+
 const Ace: Card = { type: 'ace', value: 14, key: 'A' }
 const King: Card = { type: 'king', value: 13, key: 'K' }
 const Queen: Card = { type: 'queen', value: 12, key: 'Q' }
@@ -64,7 +69,6 @@ class Day7 extends Day {
 
   sortHands (hands: Hand[], originalHands: Hand[]): number[] {
     const groupedHands = hands.map(hand => this.groupCards(hand))
-
     const keyed: HandData[] = groupedHands.map((group, index) => {
       return {
         hand: index,
@@ -109,6 +113,38 @@ class Day7 extends Day {
     return keyed.map(b => b.hand)
   }
 
+  convertJokers (cards: Card[]): Card[] {
+    // No jokers, done.
+    if (cards.filter(card => card.key === 'J').length === 0) {
+      return cards
+    }
+
+    // Only jokers, just return them.
+    const otherCards = cards.filter(card => card.key !== 'J')
+    if (otherCards.length === 0) {
+      return cards
+    }
+
+    // Group the cards
+    const grouped = this.groupCards(otherCards).sort((a, b) => {
+      if (a.amount === b.amount) {
+        return b.value - a.value
+      }
+      return b.amount - a.amount
+    })
+
+    // Get card type of the best group
+    const replace: Card = this.cards.find(card => card.key === grouped[0].key) || Joker
+
+    // Replace all Jokers with card type
+    return cards.map(card => {
+      if (card.key === 'J') {
+        return replace
+      }
+      return card
+    })
+  }
+
   solveForPartOne (input: string): string {
     this.cards = [
       Two,
@@ -126,7 +162,7 @@ class Day7 extends Day {
       Ace
     ]
 
-    const data = input.split('\n').filter(a => a).map(line => {
+    const data: Input[] = input.split('\n').filter(a => a).map(line => {
       const parts = line.split(' ')
       return {
         cards: this.toCards(parts[0]),
@@ -134,8 +170,8 @@ class Day7 extends Day {
       }
     })
 
-    const hands = data.map(({ cards }) => cards)
-    const sorted = this.sortHands(hands, hands)
+    const hands: Hand[] = data.map(({ cards }) => cards)
+    const sorted: number[] = this.sortHands(hands, hands)
     sorted.reverse()
 
     const winnings = sorted.reduce((total, cardIndex, rank) => {
@@ -162,7 +198,7 @@ class Day7 extends Day {
       Ace
     ]
 
-    const data = input.split('\n').filter(a => a).map(line => {
+    const data: Input[] = input.split('\n').filter(a => a).map(line => {
       const parts = line.split(' ')
       return {
         cards: this.toCards(parts[0]),
@@ -170,7 +206,7 @@ class Day7 extends Day {
       }
     })
 
-    const sorted = this.sortHands(data.map(({ cards }) => this.convertJokers(cards)), data.map(({ cards }) => cards))
+    const sorted: number[] = this.sortHands(data.map(({ cards }) => this.convertJokers(cards)), data.map(({ cards }) => cards))
     sorted.reverse()
 
     const winnings = sorted.reduce((total, cardIndex, rank) => {
@@ -178,38 +214,6 @@ class Day7 extends Day {
     }, 0)
 
     return winnings.toString()
-  }
-
-  private convertJokers (cards: Card[]): Card[] {
-    // No jokers, done.
-    if (cards.filter(card => card.key === 'J').length === 0) {
-      return cards
-    }
-
-    // Only jokers, just return them.
-    const otherCards = cards.filter(card => card.key !== 'J')
-    if (otherCards.length === 0) {
-      return cards
-    }
-
-    // Group the cards
-    const grouped = this.groupCards(otherCards).sort((a, b) => {
-      if (a.amount === b.amount) {
-        return b.value - a.value
-      }
-      return b.amount - a.amount
-    })
-
-    // Get card type of best group
-    const replace: Card = this.cards.find(card => card.key === grouped[0].key) || Joker
-
-    // Replace all Jokers with card type
-    return cards.map(card => {
-      if (card.key === 'J') {
-        return replace
-      }
-      return card
-    })
   }
 }
 
