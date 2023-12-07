@@ -246,15 +246,10 @@ class Day7 extends Day {
       return cards
     }
 
+    // Only jokers, just return them.
     const otherCards = cards.filter(card => card.key !== 'J')
     if (otherCards.length === 0) {
-      return [
-        Joker,
-        Joker,
-        Joker,
-        Joker,
-        Joker
-      ]
+      return cards
     }
 
     // @ts-ignore
