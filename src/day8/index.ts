@@ -55,32 +55,30 @@ class Day8 extends Day {
     }, {})
 
     // Get starting pointers.
-    const current = Object.keys(maps).filter(key => key.substring(2) === 'A')
-    const endsWithA = current.length
-    const numberOfInstructions = instructions.length
+    const starts = Object.keys(maps).filter(key => key.substring(2) === 'A')
 
-    // Count the number of steps we're doing.
-    let steps = 0
-    // Keep track of the instructions.
-    let stepIndex = 0
-    let endsWithZ = 0
-    do {
-      // Move all pointers up one step.
-      for (const index in current) {
-        current[index] = maps[current[index]][instructions[stepIndex]]
-      }
-      stepIndex = (stepIndex + 1) % numberOfInstructions // Loop back around.
+    let carry = 1
+    starts.forEach(start => {
+      let current = start
+      let stepIndex = 0
+      let steps = 0
+      do {
+        current = maps[current][instructions[stepIndex]]
+        stepIndex = (stepIndex + 1) % instructions.length
 
-      // Count the steps.
-      steps++
+        steps++
+      } while (current.substring(2) !== 'Z')
 
-      // See where we are at.
-      endsWithZ = current.filter(identifier => identifier.substring(2) === 'Z').length
+      carry = this.lcm(carry, steps)
+    })
 
-      // Loop until we have the same number of items ending on Z as there are running pointers.
-    } while (endsWithZ !== endsWithA)
+    return carry.toString()
+  }
 
-    return steps.toString()
+  lcm (...arr: number[]) {
+    const gcd = (x: number, y: number): number => (!y ? x : gcd(y, x % y))
+    const _lcm = (x: number, y: number): number => (x * y) / gcd(x, y)
+    return [...arr].reduce((a, b) => _lcm(a, b))
   }
 }
 
