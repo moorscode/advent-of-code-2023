@@ -76,7 +76,6 @@ class Day9 extends Day {
       } else {
         last = stack[0][0]
       }
-      console.log(stack)
 
       finals.push(line[0] - last)
     })
