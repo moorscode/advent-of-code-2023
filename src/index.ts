@@ -9,6 +9,7 @@ import day7 from './day7/index'
 import day8 from './day8/index'
 import day9 from './day9/index'
 import day10 from './day10/index'
+import day11 from './day11/index'
 // MORE IMPORTS HERE
 const days: Day[] = [
   day1,
@@ -21,20 +22,16 @@ const days: Day[] = [
   day8,
   day9,
   day10,
+  day11,
   // MORE DAYS HERE
 ]
 
 async function runDay (dayId: number) {
-  const start1 = Date.now()
   const part1 = await days[dayId].partOne()
-  const end1 = Date.now()
+  console.log('Part 1 result:', part1.result, `\nExecution time: ${part1.timing} ms`, '\n')
 
-  const start2 = Date.now()
   const part2 = await days[dayId].partTwo()
-  const end2 = Date.now()
-
-  console.log('Part 1 result:', part1, `\nExecution time: ${end1 - start1} ms`, '\n')
-  console.log('Part 2 result:', part2, `\nExecution time: ${end2 - start2} ms`)
+  console.log('Part 2 result:', part2.result, `\nExecution time: ${part2.timing} ms`)
 }
 
 async function run (params: string[]) {
