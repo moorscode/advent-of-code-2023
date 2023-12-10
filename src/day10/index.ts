@@ -1,4 +1,5 @@
 import { Day } from '../day'
+import { inflate } from 'node:zlib'
 
 type Coords = {
   x: number;
@@ -73,17 +74,10 @@ class Day10 extends Day {
     return pipes.find(pipe => pipe.character === character) || Ground
   }
 
-  solveForPartOne (input: string): string {
-    const { map, start } = this.createMap(input)
-    const loop = this.findLoop(start, map)
-
-    return (loop.length / 2).toString()
-  }
-
-  private createMap (input: string) {
+  private createMap (input: string): { map: Map<string, Pipe>, start: Coords } {
     let start: Coords = { x: 0, y: 0 }
 
-    const map = new Map()
+    const map: Map<string, Pipe> = new Map()
     input.split('\n').filter(a => a).forEach((line, y) => {
       line.split('').forEach((character, x) => {
         const pos: Coords = { x, y }
@@ -99,6 +93,13 @@ class Day10 extends Day {
     return { map, start }
   }
 
+  solveForPartOne (input: string): string {
+    const { map, start } = this.createMap(input)
+    const loop = this.findLoop(start, map)
+
+    return (loop.length / 2).toString()
+  }
+
   solveForPartTwo (input: string): string {
     const { map, start } = this.createMap(input)
     const loop = this.findLoop(start, map)
@@ -111,18 +112,16 @@ class Day10 extends Day {
       sum += (loop[i].x * loop[i + 1].y) - (loop[i].y * loop[i + 1].x)
     }
 
-    const area = sum / 2
-    return (Math.abs(area) - (perimeter / 2) + 1).toString()
+    return (Math.abs(sum / 2) - (perimeter / 2) + 1).toString()
   }
 
   private findLoop (start: Coords, map: Map<string, Pipe>): Coords[] {
-    const foundCoords: Coords[][] = [[], []]
     let done = false
 
     const directions: Coords[] = []
     // determine the two directions we're going at.
-    for (const pos of [{ x: -1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }]) {
-      const key = this.getKey({ x: start.x + pos.x, y: start.y + pos.y })
+    for (const pos of [{ x: -1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }] as Coords[]) {
+      const key = this.getKey(this.coordsAdd(start, pos))
       if (map.has(key)) {
         const tile = map.get(key)
         if (tile?.character !== '.') {
@@ -133,15 +132,14 @@ class Day10 extends Day {
 
     const move: Coords[] = [start, start]
 
-    foundCoords[0].push({ x: start.x + directions[0].x, y: start.y + directions[0].y })
-    foundCoords[1].push({ x: start.x + directions[1].x, y: start.y + directions[1].y })
+    const foundCoords: Coords[][] = [
+      [this.coordsAdd(start, directions[0])],
+      [this.coordsAdd(start, directions[1])]
+    ]
 
     do {
       for (const index in move) {
-        const currentTile: Coords = {
-          x: move[index].x + directions[index].x,
-          y: move[index].y + directions[index].y
-        }
+        const currentTile: Coords = this.coordsAdd(move[index], directions[index])
 
         // Determine what the other 3 items are to figure out which can be followed.
         const nextTile = this.getConnectedPipe(currentTile, move[index], map)
@@ -149,15 +147,12 @@ class Day10 extends Day {
           return []
         }
 
-        directions[index] = {
-          x: nextTile.pos.x - currentTile.x,
-          y: nextTile.pos.y - currentTile.y
-        }
+        directions[index] = this.coordsSubtract(nextTile.pos, currentTile)
 
         foundCoords[index].push(nextTile.pos)
 
         const other = parseInt(index) === 0 ? 1 : 0
-        if (foundCoords[other] && foundCoords[other].filter(a => a.x === nextTile.pos.x && a.y === nextTile.pos.y).length !== 0) {
+        if (foundCoords[other] && foundCoords[other].filter(a => this.coordsEqual(a, nextTile.pos)).length !== 0) {
           done = true
           break
         }
@@ -173,13 +168,10 @@ class Day10 extends Day {
 
   private getConnectedPipe (currentTile: Coords, ignoreTile: Coords, map: Map<string, Pipe>): Tile | null {
     const current = map.get(this.getKey(currentTile))
-    for (const pos of [{ x: -1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }]) {
-      const target: Coords = {
-        x: currentTile.x + pos.x,
-        y: currentTile.y + pos.y
-      }
+    for (const pos of [{ x: -1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }] as Coords[]) {
+      const target: Coords = this.coordsAdd(currentTile, pos)
 
-      if (target.x === ignoreTile.x && target.y === ignoreTile.y) {
+      if (this.coordsEqual(target, ignoreTile)) {
         continue
       }
 
@@ -188,8 +180,11 @@ class Day10 extends Day {
         continue
       }
 
-      // @ts-ignore
-      const test: Pipe = map.get(key)
+      const test: Pipe | undefined = map.get(key)
+      if (!test) {
+        continue
+      }
+
       if (pos.y === 1 && current?.connectBottom && current.connectBottom.includes(test.character)) {
         return {
           pos: target,
@@ -223,6 +218,18 @@ class Day10 extends Day {
 
   getKey (coords: Coords): string {
     return `${coords.y},${coords.x}`
+  }
+
+  coordsAdd (a: Coords, b: Coords): Coords {
+    return { x: a.x + b.x, y: a.y + b.y }
+  }
+
+  coordsEqual (a: Coords, b: Coords): boolean {
+    return a.x === b.x && a.y === b.y
+  }
+
+  coordsSubtract (a: Coords, b: Coords): Coords {
+    return { x: a.x - b.x, y: a.y - b.y }
   }
 }
 
