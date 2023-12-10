@@ -1,5 +1,4 @@
 import { Day } from '../day'
-import { inflate } from 'node:zlib'
 
 type Coords = {
   x: number;
