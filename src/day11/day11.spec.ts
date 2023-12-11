@@ -2,9 +2,27 @@ import day11 from './index'
 
 describe('On Day 11', () => {
   it('part1', () => {
-    expect(day11.solveForPartOne('hello')).toBe('hello')
+    expect(day11.solveForPartOne('...#......\n' +
+      '.......#..\n' +
+      '#.........\n' +
+      '..........\n' +
+      '......#...\n' +
+      '.#........\n' +
+      '.........#\n' +
+      '..........\n' +
+      '.......#..\n' +
+      '#...#.....')).toBe('374')
   })
   it('part2', () => {
-    expect(day11.solveForPartTwo('hello')).toBe('hello')
+    expect(day11.solveForPartTwo('...#......\n' +
+      '.......#..\n' +
+      '#.........\n' +
+      '..........\n' +
+      '......#...\n' +
+      '.#........\n' +
+      '.........#\n' +
+      '..........\n' +
+      '.......#..\n' +
+      '#...#.....')).toBe('82000210')
   })
 })
