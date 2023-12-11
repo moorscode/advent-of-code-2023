@@ -12,96 +12,79 @@ class Day11 extends Day {
 
   solveForPartOne (input: string): string {
     const map = this.getMap(input)
-    const columns = map[0].length
-    const rows = map.length
 
-    const galaxies = this.getGalaxies(rows, columns, map)
-    const emptyRows = this.getEmptyRows(columns, rows, map)
-    const emptyColumns = this.getEmptyColumns(columns, rows, map)
+    const galaxies = this.getGalaxies(map)
+    const emptyRows = this.getEmptyRows(map, galaxies)
+    const emptyColumns = this.getEmptyColumns(map, galaxies)
 
     const expandedGalaxies = this.expand(galaxies, emptyRows, emptyColumns, 2)
 
-    let distances = 0
-    for (let g = 0; g < expandedGalaxies.length - 1; g++) {
-      for (let z = g + 1; z < expandedGalaxies.length; z++) {
-        distances += this.getDistance(expandedGalaxies[g], expandedGalaxies[z])
-      }
-    }
-
-    return distances.toString()
+    return this.calculateTotalDistance(expandedGalaxies).toString()
   }
 
   solveForPartTwo (input: string): string {
     const map = this.getMap(input)
-    const rows = map.length
-    const columns = map[0].length
 
-    const galaxies = this.getGalaxies(rows, columns, map)
-    const emptyRows = this.getEmptyRows(columns, rows, map)
-    const emptyColumns = this.getEmptyColumns(columns, rows, map)
+    const galaxies = this.getGalaxies(map)
+    const emptyRows = this.getEmptyRows(map, galaxies)
+    const emptyColumns = this.getEmptyColumns(map, galaxies)
 
     const expandedGalaxies = this.expand(galaxies, emptyRows, emptyColumns, 1_000_000)
 
-    let distances = 0
-    for (let g = 0; g < expandedGalaxies.length - 1; g++) {
-      for (let z = g + 1; z < expandedGalaxies.length; z++) {
-        distances += this.getDistance(expandedGalaxies[g], expandedGalaxies[z])
-      }
-    }
+    return this.calculateTotalDistance(expandedGalaxies).toString()
+  }
 
-    return distances.toString()
+  private calculateTotalDistance (expandedGalaxies: Coords[]) {
+    let distances = 0
+    expandedGalaxies.forEach((galaxy, index) => {
+      for (let z = index + 1; z < expandedGalaxies.length; z++) {
+        distances += this.getDistance(galaxy, expandedGalaxies[z])
+      }
+    })
+    return distances
   }
 
   private getMap (input: string) {
     return input.split('\n').filter(a => a).map(line => line.split(''))
   }
 
-  private getEmptyRows (columns: number, rows: number, map: string[][]) {
+  private getEmptyRows (map: string[][], galaxies: Coords[]) {
     const emptyRows: number[] = []
 
-    for (let r = 0; r < rows; r++) {
-      let empty = true
-      for (let c = 0; c < columns; c++) {
-        if (map[r][c] === '#') {
-          empty = false
-          break
-        }
+    const galaxyRows: number[] = galaxies.map(galaxy => galaxy.y)
+    map.forEach((row, index) => {
+      if (!galaxyRows.includes(index)) {
+        emptyRows.push(index)
       }
-      if (empty) {
-        emptyRows.push(r)
-      }
-    }
+    })
     return emptyRows
   }
 
-  private getEmptyColumns (columns: number, rows: number, map: string[][]) {
+  private getEmptyColumns (map: string[][], galaxies: Coords[]) {
     const emptyColumns: number[] = []
 
-    for (let c = 0; c < columns; c++) {
-      let empty = true
-      for (let r = 0; r < rows; r++) {
-        if (map[r][c] === '#') {
-          empty = false
-          break
-        }
+    const galaxyColumns: number[] = galaxies.map(galaxy => galaxy.x)
+    const columns: number[] = Array(map[0].length).fill(1)
+
+    columns.forEach((column, index) => {
+      if (!galaxyColumns.includes(index)) {
+        emptyColumns.push(index)
       }
-      if (empty) {
-        emptyColumns.push(c)
-      }
-    }
+    })
 
     return emptyColumns
   }
 
-  private getGalaxies (rows: number, columns: number, map: string[][]) {
+  private getGalaxies (map: string[][]) {
     const galaxies: Coords[] = []
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < columns; c++) {
-        if (map[r][c] === '#') {
-          galaxies.push({ x: c, y: r })
+    map.forEach((row, y) => {
+      row.forEach((column, x) => {
+        if (column === '#') {
+          galaxies.push({ x, y })
         }
-      }
-    }
+      })
+    })
+
     return galaxies
   }
 
@@ -112,9 +95,9 @@ class Day11 extends Day {
   private expand (galaxies: Coords[], emptyRows: number[], emptyColumns: number[], by: number): Coords[] {
     let output: Coords[] = []
     // Expand the map. Go in reverse so we can keep the indices.
-    for (const c of emptyColumns.reverse()) {
+    for (const column of emptyColumns.reverse()) {
       output = galaxies.map(galaxy => {
-        if (galaxy.x >= c) {
+        if (galaxy.x >= column) {
           galaxy.x += (by - 1)
         }
 
@@ -122,9 +105,9 @@ class Day11 extends Day {
       })
     }
 
-    for (const r of emptyRows.reverse()) {
+    for (const row of emptyRows.reverse()) {
       output = output.map(galaxy => {
-        if (galaxy.y >= r) {
+        if (galaxy.y >= row) {
           galaxy.y += (by - 1)
         }
 
