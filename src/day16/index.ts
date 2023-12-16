@@ -15,20 +15,26 @@ class Day16 extends Day {
 
   solveForPartOne (input: string): string {
     const data = input.split('\n').filter(a => a).map(line => line.split(''))
-    let lights: Light[] = [{ x: 0, y: 0, dir: 'E' }]
+
+    return this.run(data, { x: 0, y: 0, dir: 'E' }).toString()
+  }
+
+  private run (data: string[][], light: Light) {
+    let lights: Light[] = [light]
 
     const touched: string[][][] = []
     const t = new Map()
-    t.set('0,0', true)
 
     do {
       // For each light, step until reach out of bounds - remove light
       // On split, create new light
       lights.forEach((light, index) => {
-        if (light.x < 0 || light.y < 0) {
+        if (light.x < 0 || light.y < 0 || light.y >= data.length || light.x >= data[0].length) {
           lights = lights.filter(a => a !== light)
           return
         }
+
+        t.set(`${light.y},${light.x}`, true)
 
         switch (data[light.y][light.x]) {
           case '|':
@@ -103,22 +109,31 @@ class Day16 extends Day {
         // If we've touched the tile already, avoid loops
         if (touched[light.y] && touched[light.y][light.x] && touched[light.y][light.x].includes(light.dir)) {
           lights = lights.filter(a => a !== light)
-          return
         }
 
         touched[light.y] = touched[light.y] || []
         touched[light.y][light.x] = touched[light.y][light.x] || []
         touched[light.y][light.x].push(light.dir)
-
-        t.set(`${light.y},${light.x}`, true)
       })
     } while (lights.length > 0)
 
-    return t.size.toString()
+    return t.size
   }
 
   solveForPartTwo (input: string): string {
-    return input
+    const data = input.split('\n').filter(a => a).map(line => line.split(''))
+
+    let highest = 0
+    for (let y = 0; y < data.length; y++) {
+      highest = Math.max(highest, this.run(data, { x: 0, y, dir: 'E' }))
+      highest = Math.max(highest, this.run(data, { x: data[0].length - 1, y, dir: 'W' }))
+    }
+    for (let x = 0; x < data[0].length; x++) {
+      highest = Math.max(highest, this.run(data, { x, y: 0, dir: 'S' }))
+      highest = Math.max(highest, this.run(data, { x, y: data.length - 1, dir: 'N' }))
+    }
+
+    return highest.toString()
   }
 }
 
