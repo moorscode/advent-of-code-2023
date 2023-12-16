@@ -106,7 +106,7 @@ class Day16 extends Day {
           return
         }
 
-        // If we've touched the tile already, avoid loops
+        // If we've touched the tile already from the same direction, avoid loops
         if (touched[light.y] && touched[light.y][light.x] && touched[light.y][light.x].includes(light.dir)) {
           lights = lights.filter(a => a !== light)
         }
